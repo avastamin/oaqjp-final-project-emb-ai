@@ -21,6 +21,33 @@ def emotion_detector(text_to_analyze):
         response.raise_for_status()  # Raise an error for bad status codes
         response_data = response.json()  # Convert response text into dictionary
         
+        # Handle error responses
+        if response.status_code == 400:
+            return {
+                'anger': None,
+                'disgust': None,
+                'fear': None,
+                'joy': None,
+                'sadness': None,
+                'dominant_emotion': None
+            }
+
+        response.raise_for_status()
+        data = response.json()
+
+        # Extract emotion scores
+        emotions = data.get("emotion_predictions", [{}])[0]
+        scores = {
+            'anger': emotions.get('anger'),
+            'disgust': emotions.get('disgust'),
+            'fear': emotions.get('fear'),
+            'joy': emotions.get('joy'),
+            'sadness': emotions.get('sadness'),
+            'dominant_emotion': max(emotions, key=emotions.get) if emotions else None
+        }
+        return scores
+
+    
         # Extract required emotions and their scores
         emotions = response_data.get("emotionPredictions", [{}])[0].get("emotion", {})
         anger = emotions.get("anger", 0.0)
